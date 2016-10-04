@@ -24,6 +24,15 @@ static int lept_parse_null(lept_context* c, lept_value* v) {
     return LEPT_PARSE_OK;
 }
 
+static int lept_parse_true(lept_context* c, lept_value* v) {
+    EXPECT(c,'t');
+    if(c->json[0]!='r'||c->json[1]!="u'||c->json[2]!='e')
+       return LEPT_PARSE_EXPECT_VALUE;
+       c->json+=3;
+       v->type = LEPT_NULL;
+       return LEPT_PARSE_OK;
+}
+
 static int lept_parse_value(lept_context* c, lept_value* v) {
     switch (*c->json) {
         case 'n':  return lept_parse_null(c, v);
