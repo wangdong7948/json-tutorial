@@ -26,17 +26,19 @@ static void test_parse_null() {
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, "null"));
     EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v));
 }
-
+// 新加的
 static void test_parse_true() {
     lept_value v;
-    v.type = LEPT_TRUE;
+   // v.type = LEPT_TRUE;
+    v.type = LEPT_FALSE;
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, "true"));
     EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v));
 }
 
 static void test_parse_false() {
     lept_value v;
-    v.type = LEPT_FALSE;
+   // v.type = LEPT_FALSE;
+    v.type = LEPT_TRUE;
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, "false"));
     EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v));
 }
@@ -63,15 +65,35 @@ static void test_parse_invalid_value() {
     EXPECT_EQ_INT(LEPT_PARSE_INVALID_VALUE, lept_parse(&v, "?"));
     EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v));
 }
-
+/*
 static void test_parse_root_not_singular() {
    if(json!=null && json++ =null && json++ +1!=null)          
     return LEPT_PARSE_ROOT_NOT_SINGULAR
     
 }
+*/
+int lept_parse(lept_value* v,const char* json){
+    lept_context c;
+    int ret;
+    assert(v!=null);
+    c.json = json;
+    v->type = LEPT_NULL;
+    lept_parse_whitespace(&c);
+    if((ret = lept_parse_value(&c,v))==LEPT_PARSE_OK){
+        lept_parse_whitespace(&c);
+        if(*c.json!='\0')
+            ret = LEPT_PARSE_ROOT_NOT-SINGULAR;
+    }
+    return ret;
+
+}
+
 
 static void test_parse() {
     test_parse_null();
+    // 记得调用
+    test_parse_true();
+    test_parse_false();
     test_parse_expect_value();
     test_parse_invalid_value();
     test_parse_root_not_singular();
