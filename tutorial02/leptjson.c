@@ -2,8 +2,8 @@
 #include <assert.h>  /* assert() */
 #include <stdlib.h>  /* NULL, strtod() */
 //
-#include <math.h>
-#include<errno.h>
+#include <math.h>  //HUGE_VAL
+#include<errno.h>   //errno,ERANGE
 
 #define EXPECT(c, ch)       do { assert(*c->json == (ch)); c->json++; } while(0)
 //
@@ -75,10 +75,10 @@ static int  lept_parse_literal(lept_context* c ,lept_value* v,const char* litera
     return LEPT_PARSE_OK;
 }
 
-
+/*
 static int lept_parse_number(lept_context* c, lept_value* v) {
     char* end;
-    /* \TODO validate number */
+   // TODO validate number 
     v->n = strtod(c->json, &end);
     if (c->json == end)
         return LEPT_PARSE_INVALID_VALUE;
@@ -86,34 +86,38 @@ static int lept_parse_number(lept_context* c, lept_value* v) {
     v->type = LEPT_NUMBER;
     return LEPT_PARSE_OK;
 }
+*/
 //重构
+
+//校验数字
 static int lept_parse_number(lept_context* c,lept_value* v){
-    const char* p = c->json;
-    if(*p == '-') p++;
-    if(*p=='0') p++;
-    else{
-        if(!ISDIGIT09(*p)  return LEPT_PARSE_INVALID_VALUE;
-           for(p++; ISDIGIT(*p);  p++);
-    }
-           if(*p == '.')[
-            p++;
-            if(!ISDIGIT(*p) return LEPT_PARSE_INVALID_VALUE;
-               for(p++;ISDIGIT(*p); p++;
+    const char* p = c->json;    //指针p表示当前的解析字符位置
+         if(*p == '-') p++;  //负号 跳过
+         if(*p=='0') p++;  //单个0  跳过
+    else{           
+        if(!ISDIGIT09(*p)  return LEPT_PARSE_INVALID_VALUE;     //第一个字符不是1~9  不合法
+           for(p++; ISDIGIT(*p);  p++); //多少个整数就跳过多少个
+        }
+        if(*p == '.'){  //小数点
+            p++;    //跳过
+            if(!ISDIGIT(*p) return LEPT_PARSE_INVALID_VALUE;  //不是整数 返回错误码
+               for(p++;ISDIGIT(*p); p++;    // 先跳过首个整数 ，检查是不是整数，有多少个跳过多少
             }
                    
-    if(*p=='e'  || *p=='E'){
-        p++;
-        if(*p == '+'||*p == '-')  p++;
-          if(!ISDIGIT(*p) return LEPT_PARSE_INVALID_VALUE;
-             for(p++;ISDIGIT(*p);p++);            
-    }
-             errno = 0;
-             v->n = strtod(c->json,NULL);
-             if(errno == ERANGE && (v->n == HUGE_VAL || v->n == -HUGE_VAL))
-                return LEPT_PARSE_NUMBER_TOO_BIG;
-             v->type = LEPT_NUMBER;
-             c->json = p;
-             return LEPT_PARSE_OK;
+        if(*p=='e'  || *p=='E'){  //出现E/e,有指数部分
+            p++;    //跳过那个e
+            if(*p == '+'||*p == '-')  p++; //有一个+/- ， 跳过
+                
+              if(!ISDIGIT(*p) return LEPT_PARSE_INVALID_VALUE; ////不是整数 返回错误码
+                 for(p++;ISDIGIT(*p);p++);       // 先跳过首个整数 ，检查是不是整数，有多少个跳过多少     
+            }
+          errno = 0;          
+          v->n = strtod(c->json,NULL);
+          if(errno == ERANGE && (v->n == HUGE_VAL || v->n == -HUGE_VAL))
+               return LEPT_PARSE_NUMBER_TOO_BIG;//从返回值得知数值是否过大，以返回 LEPT_PARSE_NUMBER_TOO_BIG 错误码。
+          v->type = LEPT_NUMBER;
+          c->json = p;
+          return LEPT_PARSE_OK;
              
 }
 
